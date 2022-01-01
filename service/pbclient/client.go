@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
-	proto "server/service/mygrpc/myGomemberServer/go"
 
+	proto "github.com/Anla3421/myGoProtobuf/myGoMemberServer/go"
 	"google.golang.org/grpc"
 )
 
