@@ -30,7 +30,7 @@ type (
 )
 
 // NewShopingCartTask:實體化Task
-func NewShopingCartQueryTask() *ShoppingCartQueryTask {
+func NewShoppingCartQueryTask() *ShoppingCartQueryTask {
 	return &ShoppingCartQueryTask{
 		Req:     &ShoppingCartQueryReq{},
 		Res:     &protocol.Response{},
@@ -39,8 +39,8 @@ func NewShopingCartQueryTask() *ShoppingCartQueryTask {
 }
 
 // shopingCart
-func ShopingCartQuery(c *gin.Context) {
-	task := NewShopingCartQueryTask()
+func ShoppingCartQuery(c *gin.Context) {
+	task := NewShoppingCartQueryTask()
 	c.Set(env.APIResKeyInGinContext, task.Res)
 
 	if shouldBreak := task.ShouldBind(c); shouldBreak {

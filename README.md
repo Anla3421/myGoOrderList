@@ -4,3 +4,4 @@
 API:  
 1. Order  
 2. OrderQuery  
+3. OrderUpdate

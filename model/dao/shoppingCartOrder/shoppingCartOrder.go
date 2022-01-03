@@ -26,14 +26,15 @@ func ShoppingCartOrder(req *dto.ShoppingCartOrder) error {
 	}
 
 	for k := range req.ItemID {
-		insOrder, err := dao.MysqlConn.Query("INSERT INTO orderDetail (orderID,itemID,amount,price,buyerID) VALUES(?,?,?,?,?) ON DUPLICATE KEY UPDATE ID=?,itemID=?,amount=?,price=?",
+		_, err := dao.MysqlConn.Query("INSERT INTO orderDetail (orderID,itemID,amount,price,buyerID) VALUES(?,?,?,?,?) ON DUPLICATE KEY UPDATE ID=?,itemID=?,amount=?,price=?",
 			req.OrderID, req.ItemID[k], req.Amount[k], req.Price[k], req.BuyerID, req.ID, req.ItemID[k], req.Amount[k], req.Price[k])
 		if err != nil {
-			fmt.Println(insOrder)
 			return err
 		}
+
 	}
 
+	defer getOrderID.Close()
 	defer results.Close()
 	return nil
 }

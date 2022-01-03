@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"server/api/protocol"
 	"server/env"
-	"server/model/dao/shoppingCartOrder"
+	"server/model/dao/shoppingCartUpdate"
 	"server/model/dto"
 	"server/service/pbclient"
 	"time"
@@ -14,41 +14,42 @@ import (
 )
 
 type (
-	ShoppingCartReq struct {
+	ShoppingCartUpdateReq struct {
 		Jwt        string `form:"jwt" json:"jwt" binding:"required"`
 		TotalPrice int    `form:"totalPrice" json:"totalPrice" binding:"required"`
 
-		ItemID []int `form:"itemID" json:"itemID" binding:"required"`
-		Amount []int `form:"amount" json:"amount" binding:"required"`
-		Price  []int `form:"price" json:"price" binding:"required"`
-		ID     int   `form:"id" json:"id"`
+		ItemID  []int `form:"itemID" json:"itemID" binding:"required"`
+		Amount  []int `form:"amount" json:"amount" binding:"required"`
+		Price   []int `form:"price" json:"price" binding:"required"`
+		ID      []int `form:"id" json:"id"`
+		OrderID int   `form:"orderID" json:"orderID"`
 	}
 
-	ShoppingCartStorage struct {
+	ShoppingCartUpdateStorage struct {
 		Err     error
 		BuyerID int
 		Account string
 	}
 
-	ShoppingCartTask struct {
-		Req     *ShoppingCartReq
+	ShoppingCartUpdateTask struct {
+		Req     *ShoppingCartUpdateReq
 		Res     *protocol.Response
-		Storage *ShoppingCartStorage
+		Storage *ShoppingCartUpdateStorage
 	}
 )
 
 // NewShopingCartTask:實體化Task
-func NewShoppingCartTask() *ShoppingCartTask {
-	return &ShoppingCartTask{
-		Req:     &ShoppingCartReq{},
+func NewShoppingCartUpdateTask() *ShoppingCartUpdateTask {
+	return &ShoppingCartUpdateTask{
+		Req:     &ShoppingCartUpdateReq{},
 		Res:     &protocol.Response{},
-		Storage: &ShoppingCartStorage{},
+		Storage: &ShoppingCartUpdateStorage{},
 	}
 }
 
 // shopingCart
-func ShoppingCartOrder(c *gin.Context) {
-	task := NewShoppingCartTask()
+func ShoppingCartUpdate(c *gin.Context) {
+	task := NewShoppingCartUpdateTask()
 	c.Set(env.APIResKeyInGinContext, task.Res)
 
 	if shouldBreak := task.ShouldBind(c); shouldBreak {
@@ -59,7 +60,7 @@ func ShoppingCartOrder(c *gin.Context) {
 		c.Error(task.Storage.Err)
 		return
 	}
-	if shouldBreak := task.ShoppingCartOrder(c); shouldBreak {
+	if shouldBreak := task.shoppingCartUpdate(c); shouldBreak {
 		c.Error(task.Storage.Err)
 		return
 	}
@@ -68,7 +69,7 @@ func ShoppingCartOrder(c *gin.Context) {
 
 // ShouldBind:參數解析
 // 檢查input的資料key的型態與名稱正確性，Value不可為空
-func (task *ShoppingCartTask) ShouldBind(c *gin.Context) bool {
+func (task *ShoppingCartUpdateTask) ShouldBind(c *gin.Context) bool {
 	if err := c.ShouldBindBodyWith(task.Req, binding.JSON); err != nil {
 		fmt.Println("ShouldBindJSON fault", err)
 		task.Storage.Err = err
@@ -78,7 +79,7 @@ func (task *ShoppingCartTask) ShouldBind(c *gin.Context) bool {
 }
 
 // AccountJwtCheck:
-func (task *ShoppingCartTask) AccountJwtCheck(c *gin.Context) bool {
+func (task *ShoppingCartUpdateTask) AccountJwtCheck(c *gin.Context) bool {
 	res := pbclient.GetMemberIDByJWT(task.Req.Jwt)
 	if res.ID == 0 {
 		task.Storage.Err = fmt.Errorf("Please login first")
@@ -89,18 +90,21 @@ func (task *ShoppingCartTask) AccountJwtCheck(c *gin.Context) bool {
 	return false
 }
 
-func (task *ShoppingCartTask) ShoppingCartOrder(c *gin.Context) bool {
+func (task *ShoppingCartUpdateTask) shoppingCartUpdate(c *gin.Context) bool {
 	t := time.Now()
 	timeNow := t.Format("2006-01-02 15:04:05")
 	fmt.Println(timeNow)
-	task.Storage.Err = shoppingCartOrder.ShoppingCartOrder(&dto.ShoppingCartOrder{
+	task.Storage.Err = shoppingCartUpdate.ShoppingCartUpdate(&dto.ShoppingCartUpdate{
 		TotalPrice: task.Req.TotalPrice,
 		ItemID:     task.Req.ItemID,
 		Amount:     task.Req.Amount,
 		Price:      task.Req.Price,
 		BuyerID:    task.Storage.BuyerID,
 		TimeNow:    timeNow,
+		ID:         task.Req.ID,
+		OrderID:    task.Req.OrderID,
 	})
+	fmt.Println("嘿嘿嘿", task.Storage.Err)
 	if task.Storage.Err != nil {
 		return true
 	}

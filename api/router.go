@@ -10,6 +10,7 @@ import (
 func Router(r *gin.Engine) {
 
 	r.Use(middleware.ResponseHanlder())
-	r.POST("/order", controller.ShopingCartOrder)
-	r.POST("/query", controller.ShopingCartQuery)
+	r.POST("/order", controller.ShoppingCartOrder)
+	r.POST("/query", controller.ShoppingCartQuery)
+	r.POST("/update", controller.ShoppingCartUpdate)
 }
